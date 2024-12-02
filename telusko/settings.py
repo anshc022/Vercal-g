@@ -62,14 +62,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'telusko.wsgi.application'
 
 # Database configuration
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://vercal_g_user:3w1vvDiYk90APisPHTY0LgqemBDRItzL@dpg-ct6qms5ds78s73c67o0g-a.oregon-postgres.render.com/vercal_g')
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}')
+        default=DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True,
     )
 }
 
+# Fallback to SQLite if database URL is invalid
 if not DATABASES['default'].get('ENGINE'):
-    raise ImproperlyConfigured("DATABASE_URL is improperly configured or missing. Please provide a valid DATABASE_URL environment variable.")
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
